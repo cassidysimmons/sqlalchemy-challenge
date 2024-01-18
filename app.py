@@ -49,8 +49,8 @@ def home():
         f"/api/v1.0/precipitation<br/>"
         f"/api/v1.0/stations<br/>"
         f"/api/v1.0/tobs<br/>"
-        f"/api/v1.0/<start>"
-        f"/api/v1.0/<start>/<end>"
+        f"/api/v1.0/year-month-day<br/>"
+        f"/api/v1.0/year-month-day/year-month-day"
     )
 
 # ====================== precipitation route ==============================
@@ -126,40 +126,50 @@ def tobs():
 @app.route("/api/v1.0/<start>")
 def start(start):
 
-    date = session.query(Measurement.date).all()
+    # query min, max, and avg temp observations
+    sel = [func.min(Measurement.tobs), func.max(Measurement.tobs),\
+       (func.round(func.avg(Measurement.tobs),1))]
 
-    t_max = session.query(func.max(Measurement.tobs)).\
-    filter(Measurement.date >= {start}).all()
+    # add filter to find only the dates greater than or equal to the start date
+    stat_sum = session.query(*sel).\
+    filter(Measurement.date >= start).all()
 
-    t_min = session.query(func.min(Measurement.tobs)).\
-    filter(Measurement.date >= {start}).all()
-
-    t_avg = session.query(func.round(func.avg(Measurement.tobs),1)).\
-    filter(Measurement.date >= {start}).all()
-
+    # loop to create dictionary /w query results... 
     t_list = []
-    for date, tobs in t_min, t_avg, t_max:
+    for avg, max, min in stat_sum:
         t_dict = {}
-        t_dict["date"] = date
-        t_dict["tobs"] = tobs
+        t_dict["min"] = min
+        t_dict["max"] = max
+        t_dict["avg"] = avg
         t_list.append(t_dict)
 
-
-    canonicalized = start.replace(" ","").lower()
-    for d in date:
-        search_term = d["start"].replace(" ","").lower()
-
-        if search_term ==  canonicalized:
-            return jsonify(t_list)
-
     print("server received request for 'temp_start' page...")
-    return jsonify({"error": f"date {start} not found in data set..."}), 404
+    return jsonify(t_list)
 
 # =================================== temp start + end date route =======================
 @app.route("/api/v1.0/<start>/<end>")
 def start_end(start, end):
+
+    # query min, max, and avg temp observations
+    sel = [func.min(Measurement.tobs), func.max(Measurement.tobs),\
+    (func.round(func.avg(Measurement.tobs),1))]
+
+    # filter to find only the dates within the start and end date range
+    stat_sum = session.query(*sel).\
+    filter(Measurement.date >= start).\
+    filter(Measurement.date <= end).all()
+
+    # loop to create dictionary /w query results... 
+    t_list = []
+    for avg, max, min in stat_sum:
+        t_dict = {}
+        t_dict["min"] = min
+        t_dict["max"] = max
+        t_dict["avg"] = avg
+        t_list.append(t_dict)
+
     print("server received request for 'temp_start_end' page...")
-    return
+    return jsonify(t_list)
 
 if __name__ == "__main__":
     app.run(debug=True)
