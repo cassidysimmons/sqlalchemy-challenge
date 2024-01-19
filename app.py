@@ -53,7 +53,7 @@ def home():
         f"/api/v1.0/year-month-day/year-month-day"
     )
 
-# ====================== precipitation route ==============================
+# ====================== precipitation route ============================
 @app.route("/api/v1.0/precipitation")
 def precipitation():
     # calculating the date one year from the last date
@@ -77,7 +77,7 @@ def precipitation():
     print("server received request for 'precipitation' page...")
     return jsonify(prcp_list)
 
-# ================================ stations route =================================
+# ================================ stations route ==============================
 @app.route("/api/v1.0/stations")
 def stations():
     # query stations + convert to tuple (because json)
@@ -97,7 +97,7 @@ def stations():
     print()
     return jsonify(station_list)
 
-# ==================================== tobs route ===================================
+# ==================================== tobs route ===============================
 @app.route("/api/v1.0/tobs")
 def tobs():
     # redefine 'date' 
@@ -122,7 +122,7 @@ def tobs():
     print("server received request for 'tobs' page...")
     return jsonify(tobs_list)
 
-# =================================== temp start date route ===============================
+# =================================== temp start date route ==========================
 @app.route("/api/v1.0/<start>")
 def start(start):
 
